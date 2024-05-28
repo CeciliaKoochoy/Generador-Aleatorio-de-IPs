@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <link href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.datatables.net/buttons/3.0.2/css/buttons.dataTables.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.2/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.print.min.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    
+
+
+
+
+
+    <title>Home</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" >
+    
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_tiempos.css') }}">
+    
+    
+    <script src="https://kit.fontawesome.com/b634328538.js" crossorigin="anonymous"></script>
+    
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        ///////////////////////////////////// CREAR DATATABLES  ///////////////////////////////////// 
+        new DataTable('#example', {
+          paging: false,
+          scrollCollapse: true,
+          scrollY: '250px',
+          
+          lengthChange: false,
+          order: [[0, 'desc']],
+          layout: {
+            topStart: {
+                buttons: ['copy',  'excel', 'pdf', 'print']
+            }
+          }
+        });
+        new DataTable('#example2', {
+          paging: false,
+          info: false,
+          searching: false,
+          ordering: false
+        });
+        new DataTable('#example3', {
+          paging: false,
+          info: false,
+          searching: false,
+          ordering: false,
+          scrollY: '250px',
+        });
+       
+        ///////////////////////////////////// CREAR MAPA  ///////////////////////////////////// 
+        var map = L.map('mapid').setView([-12.0464, -77.0428], 12);
+
+        // Añade la capa base del mapa
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Añade un marcador en la ubicación deseada (por ejemplo, la Plaza de Armas de Lima)
+        //L.marker([-12.04318, -77.02824]).addTo(map)
+        //    .bindPopup('Plaza de Armas de Lima')
+        //    .openPopup();
+
+        var markers = [];
+        var checkboxes = document.querySelectorAll('.marker-checkbox');
+        checkboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+              
+                var lng = parseFloat(this.dataset.lat);
+                var lat = parseFloat(this.dataset.lng);
+                var ip = this.dataset.ip;
+                if (this.checked) {
+                    var marker = L.marker([lat, lng]).addTo(map)
+                      .bindPopup(ip, { autoClose: false, closeOnClick: false })
+                      .openPopup();
+                      markers[ip] = marker;
+                    
+                }else{
+                  
+                  var marker = markers[ip]; // Busca el marcador por número de IP
+                  if (marker) {
+                      map.removeLayer(marker); // Remueve el marcador del mapa
+                      delete markers[ip]; // Elimina la referencia al marcador
+                  }
+                }
+            });
+        });
+
+        
+
+
+
+      });
+    </script>
+    
+
+
+    
+  </head>
+
+  <style>
+    #example2 thead th,
+    #example2 tfoot th,
+    #example2 tbody td {
+        text-align: center;
+    }
+    
+
+    
+
+  </style>
+
+
+  <body style="padding:20px">
+    <div style="padding:15px; width:100%;   background-color:#f1f1ef;  border:none; border-radius: 5px; font-size:13px; display:flex; gap:5px;">
+      <i class="fa-solid fa-circle-info" style="color:#3887c7"></i> 
+      <div>Tenemos 2026 obras certificados en el periodo OCT23-DIC23 en Lima, de los cuales se inspeccionarán 369: 119 de Fija, 118 de Redes IP, 8 de Transporte, 30 de Energía y 94 de Móviles</div> 
+    </div>
+    <br>
+
+    <div style="display:flex; gap:20px; width:100%">
+      
+      <div style="width:400px; min-wdith:400px">
+        <h3 style="padding-left:5px; background-color:#e7f3f8; height:30px; line-height: 30px;">Generador Aleatorio</h3>
+        <br>
+        <div style="padding:10px">
+        <form method="post" action="{{ url_for('views.home') }}" style="text-align: center;">
+          <input type="hidden" name="form_name" value="generar_ip">
+          
+          <div style="width:100%; font-weight:bold; font-size:13px; text-align:left" for="dropdown">Elegir una capa:</div>
+          <div style="height:8px"></div>
+          <select style="width:100%; padding:0px 5px; border: 1px solid #ccc; border-radius: 5px; height:35px; line-height: 35px; font-size:14px" id="dropdown" name="options">
+              <option value="CUALQUIERA" {% if capa_seleccionada == 'CUALQUIERA' %}selected{% endif %}>Cualquiera</option>
+              <option value="FIJA" {% if capa_seleccionada == 'FIJA' %}selected{% endif %}>Fija</option>
+              <option value="REDES IP" {% if capa_seleccionada == 'REDES IP' %}selected{% endif %}>Redes IP</option>
+              <option value="TRANSPORTE" {% if capa_seleccionada == 'TRANSPORTE' %}selected{% endif %}>Transporte</option>
+              <option value="ENERGIA" {% if capa_seleccionada == 'ENERGIA' %}selected{% endif %}>Energía</option>
+              <option value="MOVIL" {% if capa_seleccionada == 'MOVIL' %}selected{% endif %}>Movil</option>
+          </select>
+          <br>
+          <br>
+          <br>
+          <button type="submit" style="width:100%; height:40px; background-color:#2babdc; color:white; border:none; border-radius: 5px;">Generar</button>
+          
+        
+        </form>
+        <br>
+        
+        
+        {% if ip_seleccionado=="nada"%}
+          
+        {% else %}
+          
+          {% for index, row in df_seleccionado.iterrows() %}
+              <div style="font-weight:bold; font-size:13px">Itemplan</div>
+              <div style="height:8px"></div>
+              <div style="padding:0px 5px; border: 1px solid #ccc; border-radius: 5px; height:35px; line-height: 35px; font-size:14px">{{ row['ITEMPLAN'] }}</div>
+              <br>
+              <div style="font-weight:bold; font-size:13px">Proyecto</div>
+              <div style="height:8px"></div>
+              <div style="padding:0px 5px; border: 1px solid #ccc; border-radius: 5px; height:35px; line-height: 35px; font-size:14px">{{ row['PROYECTO'] }}</div>
+              <br>
+              <div style="font-weight:bold; font-size:13px">Distrito</div>
+              <div style="height:8px"></div>
+              <div style="padding:0px 5px; border: 1px solid #ccc; border-radius: 5px; min-height:35px; line-height: 35px; font-size:14px">{{ row['DISTRITO'] }}</div>
+              <br>
+              <div style="font-weight:bold; font-size:13px">Capa</div>
+              <div style="height:8px"></div>
+              <div style="padding:0px 5px; border: 1px solid #ccc; border-radius: 5px; height:35px; line-height: 35px; font-size:14px">{{ row['CAPA'] }}</div>
+              <br>
+              <div style="font-weight:bold; font-size:13px">Codigo MDF</div>
+              <div style="height:8px"></div>
+              <div style="padding:0px 5px; border: 1px solid #ccc; border-radius: 5px; height:35px; line-height: 35px; font-size:14px">{{ row['CODIGO MDF'] }}</div>
+          {% endfor %}
+          
+          <br>
+          <form method="post" action="{{ url_for('views.home') }} " style="text-align: center;" >
+            <input type="hidden" name="form_name" value="cargar_ip">
+            <button type="submit" style="width:100%; height:40px; background-color:#2babdc; color:white; border:none; border-radius: 5px;">Guardar Itemplan</button>
+          </form>
+          
+        {% endif %}
+        </div>
+        
+      </div>
+      
+      <div style="width:100%; overflow-x: auto;">
+        <h3 style=" padding-left:5px; background-color:#e7f3f8; height:30px; line-height: 30px;">IPs guardados para inspección</h3>
+        <br>
+        <table id="example2"  style="width:100%">
+          <thead>
+            <tr>
+              <th style="border-right: 1px solid #b2b2b2;">CAPA</th>
+              <th>FIJA</th>
+              <th>REDES IP</th>
+              <th>TRANSPORTE</th>
+              <th>ENERGIA</th>
+              <th>MOVIL</th>
+              <th style="border-left: 1px solid #b2b2b2;">TOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border-right: 1px solid #b2b2b2;">CANT MÁXIMA</td>
+              <td>119</td>
+              <td>118</td>
+              <td>8</td>
+              <td>30</td>
+              <td>94</td>
+              <td style="border-left: 1px solid #b2b2b2;">369</td>
+            </tr>
+            <tr>
+              <td style="border-right: 1px solid #b2b2b2;">CANT INSPECCIONADOS</td>
+              <td>{{ cant_por_capa['FIJA'] }}</td>
+              <td>{{ cant_por_capa['REDES IP'] }}</td>
+              <td>{{ cant_por_capa['TRANSPORTE'] }}</td>
+              <td>{{ cant_por_capa['ENERGIA'] }}</td>
+              <td>{{ cant_por_capa['MOVIL'] }}</td>
+              <td style="border-left: 1px solid #b2b2b2;">{{ cant_por_capa['FIJA']+cant_por_capa['REDES IP']+ cant_por_capa['TRANSPORTE']+cant_por_capa['ENERGIA']+cant_por_capa['MOVIL']}}</td>
+            </tr>
+          
+          
+            <tr>
+              <th style="border-top: 1px solid #b2b2b2; border-right: 1px solid #b2b2b2;">AVANCE</th>
+              <th style="border-top: 1px solid #b2b2b2; ">{{ (cant_por_capa['FIJA']/119*100) | int }}%</th>
+              <th style="border-top: 1px solid #b2b2b2; ">{{ (cant_por_capa['REDES IP']/118*100) |  int}}%</th>
+              <th style="border-top: 1px solid #b2b2b2; ">{{ (cant_por_capa['TRANSPORTE']/8*100) | int}}%</th>
+              <th style="border-top: 1px solid #b2b2b2; ">{{ (cant_por_capa['ENERGIA']/30*100) | int}}%</th>
+              <th style="border-top: 1px solid #b2b2b2; ">{{ (cant_por_capa['MOVIL']/94*100) | int}}%</th>
+              <th style="border-top: 1px solid #b2b2b2; border-left: 1px solid #b2b2b2;">{{ ((cant_por_capa['FIJA']+cant_por_capa['REDES IP']+ cant_por_capa['TRANSPORTE']+cant_por_capa['ENERGIA']+cant_por_capa['MOVIL'])/369*100) | int}}%</th>
+            </tr>
+            <tr>
+              <td ></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td ></td>
+            </tr>
+            <tr>
+              <td style="border-right: 1px solid #b2b2b2;">20% MAYOR MONTO</td>
+              <td>{{ percent20['FIJA'] }}</td>
+              <td>{{ percent20['REDES IP'] }}</td>
+              <td>{{ percent20['TRANSPORTE'] }}</td>
+              <td>{{ percent20['ENERGIA'] }}</td>
+              <td>{{ percent20['MOVIL'] }}</td>
+              <th style="border-left: 1px solid #b2b2b2;">{{ percent20['FIJA']+percent20['REDES IP']+ percent20['TRANSPORTE']+percent20['ENERGIA']+percent20['MOVIL']}}%</th>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th style="border-right: 1px solid #b2b2b2;">PROYECCION (CANT)</th>
+              <th>{{ proyeccion['FIJA'] }}</th>
+              <th>{{ proyeccion['REDES IP']}}</th>
+              <th>{{ proyeccion['TRANSPORTE'] }}</th>
+              <th>{{ proyeccion['ENERGIA'] }}</th>
+              <th>{{ proyeccion['MOVIL']}}</th>
+              <th style="border-left: 1px solid #b2b2b2; ">{{ proyeccion['FIJA']+proyeccion['REDES IP']+ proyeccion['TRANSPORTE']+proyeccion['ENERGIA']+proyeccion['MOVIL']}}%</th>
+            </tr>
+
+            <tr>
+              <th style="border-top: none; border-right: 1px solid #b2b2b2;">PROYECCION (%)</th>
+              <th style="border-top: none ">{{ (proyeccion['FIJA']/119*100) | int }}%</th>
+              <th style="border-top: none ">{{ (proyeccion['REDES IP']/118*100) |  int}}%</th>
+              <th style="border-top: none ">{{ (proyeccion['TRANSPORTE']/8*100) | int}}%</th>
+              <th style="border-top: none ">{{ (proyeccion['ENERGIA']/30*100) | int}}%</th>
+              <th style="border-top: none ">{{ (proyeccion['MOVIL']/94*100) | int}}%</th>
+              <th style="border-top: none; border-left: 1px solid #b2b2b2;">{{ ((proyeccion['FIJA']+proyeccion['REDES IP']+ proyeccion['TRANSPORTE']+proyeccion['ENERGIA']+proyeccion['MOVIL'])/369*100) | int}}%</th>
+            </tr>
+          </tfoot>
+        </table>
+        
+    
+            
+         
+        
+        
+        
+        <br>
+        <br>
+      
+        <table id="example" class="stripe" style="width:100%; ">
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>ITEMPLAN</th> 
+              <th>PROYECTO</th>
+              <th>DISTRITO</th>  
+              <th>CAPA</th>   
+              <th>INSPECCIONADO?</th> 
+              <th>FECHA SELECCION</th>
+              <th>GRAFICAR</th>
+              <th>COORD X</th> 
+              <th>COORD Y</th>
+              
+            </tr>
+          </thead>
+        
+          <tbody style="font-size:13px">
+          {% for index, row in df_inspec_y_20.iterrows() %}
+            <tr>
+              <td>{{ index +1}}</td>
+              <td>{{ row['ITEMPLAN'] }}</td>
+              <td>{{ row['PROYECTO'] }}</td>
+              <td>{{ row['DISTRITO'] }}</td>
+              <td>{{ row['CAPA'] }}</td>
+              <td>{{ row['GRUPO INSPECCION'] }}</td>
+              <td>{{ row['FECHA SELECCIONADO'].strftime("%d %B") }}</td>
+              {% if row['COORD X']!="SIN INFORMACION" and row['COORD X']!="SIN INFORMACION" %}
+                <td style="text-align:center"><input type="checkbox" class="marker-checkbox" data-lat="{{ row['COORD X'] }}" data-lng="{{ row['COORD Y'] }}" data-ip="{{ row['ITEMPLAN'] }}"></td>
+              {% else %}
+                <td></td>
+              {% endif %}
+              
+              <td>{{ row['COORD X'] }}</td>
+              <td>{{ row['COORD Y'] }}</td>
+              
+              
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <br>
+        <br>
+
+        <div>Marca la casilla en los ItemPlan que deseas visualizar en el mapa</div>
+        
+        <br>
+        <div id="mapid" style="height: 400px;"></div>
+        <br>
+        <br>
+        <table id="example3" style="width:100%">
+          <thead>
+            <tr>
+              <th>DISTRITO</th>
+              <th>FIJA</th>
+              <th>REDES IP</th>
+              <th>TRANSPORTE</th>
+              <th>ENERGIA</th>
+              <th>MOVIL</th>
+              
+              <th style="border-left: 1px solid #b2b2b2;">TOTAL</th>
+            </tr>
+          </thead>
+        
+          <tbody style="font-size:13px">
+          {% for index, row in df_distritos.iterrows() %}
+            
+              {% if index == "Total_Columna" %}
+                
+              {% else %}
+              <tr>
+                <td>{{ index }}</td>
+                <td>{{ row['FIJA']}}</td>
+                <td>{{ row['REDES IP'] }}</td>
+                <td>{{ row['TRANSPORTE']}}</td>
+                <td>{{ row['ENERGIA'] }}</td>
+                <td>{{ row['MOVIL'] }}</td>
+                <td style="border-left: 1px solid #b2b2b2;">{{ row['Total_Fila'] }}</td>
+              </tr>
+              {% endif%}
+            
+          {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th style="text-align:left">TOTAL</th>
+              {% set ultima_fila = df_distritos.iloc[-1] %}
+              <th>{{ ultima_fila['FIJA']}}</th>
+              <th>{{ ultima_fila['REDES IP']}}</th>
+              <th>{{ ultima_fila['TRANSPORTE'] }}</th>
+              <th>{{ ultima_fila['ENERGIA'] }}</th>
+              <th>{{ ultima_fila['MOVIL']}}</th>
+              <th style="border-left: 1px solid #b2b2b2;">{{ ultima_fila['Total_Fila'] }}</th>
+          </tr>
+          </tfoot>
+        </table>
+      
+    </div>
+      
+
+  </div>
+
+
+
+
+ 
+   
+  </body>
+
+</html>
+
+
+
+
+
+
+
+
+        
+        
+            
+
+
+
+
+
+
+        
+
+
+
+
+ 
+
+
